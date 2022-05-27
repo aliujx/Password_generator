@@ -2,6 +2,7 @@ from tkinter import *
 from  tkinter import messagebox
 import random
 import pyperclip
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
@@ -26,6 +27,9 @@ def generate_password():
 	password_entry.insert(0, password)
 	pyperclip.copy(password)
 
+	
+def search():
+	message = messagebox.showinfo(title="Your password", message=f"{website_text}: \nemail: {
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 
@@ -33,15 +37,31 @@ def save_password():
 	website = website_entry.get()
 	email = email_entry.get()
 	password = password_entry.get()
+	new_data_password = {
+		website: {
+			"email": email, 
+			"password": password,
+		}
+	}
 
 	if len(website) == 0 or len(password) == 0:
 		messagebox.showinfo(title='Oops!', message="Please don't leave any field empty!")
 
 	else:
-		is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {email} \nPassword: {password} \nSave new password?")
-		if is_ok:
-			with open("my_passwords.txt", mode="a") as file:
-				file.write(f"\n{website} | {email} | {password}")
+		try:
+			with open("my_passwords.json", mode="r") as file:
+				#Reading old data
+				data = json.load(file)
+		except FileNotFoundError:
+			with open("my_password.json", "w) as file:
+				json.dump(new_data_password, file, indent=4)  
+		else:
+			#Updating old data with new data
+			data.update(new_data_password)
+			with open("my_password.json", "w") as data:
+				#Saving the updated data
+				json.dump(data, file, indent=4)
+		finally:	
 			website_entry.delete(0, END)
 			password_entry.delete(0, END)
 
@@ -65,8 +85,8 @@ email_text.grid(column=0, row=2)
 password_text = Label(text="Password: ")
 password_text.grid(column=0, row=3)
 
-website_entry = Entry(width=40)
-website_entry.grid(column=1, row=1, columnspan=2)
+website_entry = Entry(width=22)
+website_entry.grid(column=1, row=1)
 website_entry.focus()
 
 email_entry = Entry(width=40)
@@ -75,6 +95,9 @@ email_entry.grid(column=1, row=2, columnspan=2)
 
 password_entry = Entry(width=22)
 password_entry.grid(column=1, row=3)
+					  
+search_button = Button(text="Search", command=search)
+search_button.grid(column=2, row=1)
 
 password_button = Button(text="Generate Password",command=generate_password)
 password_button.grid(column=2, row=3)
